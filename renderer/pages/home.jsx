@@ -1,93 +1,61 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/Head';
 import Link from 'next/Link';
 import {
   Layout,
-  Form,
-  Select,
-  InputNumber,
-  DatePicker,
-  Switch,
-  Slider,
-  Button
+  List,
 } from 'antd';
-import 'serialport';
 import 'antd/dist/antd.css';
 
 const {Header, Content} = Layout;
-const {Item: FormItem} = Form;
-const {Option} = Select;
 
-export default () => (
-  <React.Fragment>
-    <Head>
-      <title>Home - Nextron (with-javascript-ant-design)</title>
-    </Head>
+const Home = () => {
+  // if Next.js's webpack process is server side one, remote is undefined!
+  // if this is client one, remote is available.
+  const remote = require('electron').remote || false;
 
-    <Header>
-      <Link href="/next">
-        <a>Go to next page</a>
-      </Link>
-    </Header>
+  const [data, setData] = useState([]);
 
-    <Content style={{padding: 48}}>
-      <Form layout="horizontal">
-        <FormItem
-          label="Input Number"
-          labelCol={{span: 8}}
-          wrapperCol={{span: 8}}
-        >
-          <InputNumber
-            size="large"
-            min={1}
-            max={10}
-            style={{width: 100}}
-            defaultValue={3}
-            name="inputNumber"
-          />
-          <a href="#">Link</a>
-        </FormItem>
+  // it works only client process
+  if (remote) {
+    // dinamically import from main process (from background.js)
+    const { listAllAvailables } = remote.require('./serialport');
 
-        <FormItem label="Switch" labelCol={{span: 8}} wrapperCol={{span: 8}}>
-          <Switch defaultChecked name="switch" />
-        </FormItem>
+    useEffect(() => {
+      (async () => {
+        const availables = await listAllAvailables();
+        for (let i = 0; i < availables.length; i++) {
+          const item = availables[i];
+          console.log(item);
+          setData(data.concat(item.comName));
+        }
+      })();
+    }, []);
+  }
 
-        <FormItem label="Slider" labelCol={{span: 8}} wrapperCol={{span: 8}}>
-          <Slider defaultValue={70} />
-        </FormItem>
+  return (
+    <React.Fragment>
+      <Head>
+        <title>Home - Nextron (with-javascript-ant-design)</title>
+      </Head>
 
-        <FormItem label="Select" labelCol={{span: 8}} wrapperCol={{span: 8}}>
-          <Select
-            size="large"
-            defaultValue="lucy"
-            style={{width: 192}}
-            name="select"
-          >
-            <Option value="jack">jack</Option>
-            <Option value="lucy">lucy</Option>
-            <Option value="disabled" disabled>
-              disabled
-            </Option>
-            <Option value="yiminghe">yiminghe</Option>
-          </Select>
-        </FormItem>
+      <Header>
+        <Link href="/next">
+          <a>Go to next page</a>
+        </Link>
+      </Header>
 
-        <FormItem
-          label="DatePicker"
-          labelCol={{span: 8}}
-          wrapperCol={{span: 8}}
-        >
-          <DatePicker name="startDate" />
-        </FormItem>
-        <FormItem style={{marginTop: 48}} wrapperCol={{span: 8, offset: 8}}>
-          <Button size="large" type="primary" htmlType="submit">
-            OK
-          </Button>
-          <Button size="large" style={{marginLeft: 8}}>
-            Cancel
-          </Button>
-        </FormItem>
-      </Form>
-    </Content>
-  </React.Fragment>
-);
+      <Content style={{padding: 48}}>
+        <List
+          header="Available Serial Ports"
+          dataSource={data}
+          renderItem={(item, index) => <List.Item key={index}>{item}</List.Item>}
+          bordered
+        />
+      </Content>
+    </React.Fragment>
+  );
+};
+
+export default Home;
