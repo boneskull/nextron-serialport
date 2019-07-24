@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps && electron-rebuild -f -v 5.0.8 -w serialport"
   },
   "dependencies": {
     "electron-serve": "^0.3.0",
@@ -21,8 +21,9 @@
     "antd": "^3.20.5",
     "babel-loader": "^8.0.6",
     "babel-plugin-import": "^1.12.0",
-    "electron": "^5.0.7",
+    "electron": "5.0.8",
     "electron-builder": "^21.1.1",
+    "electron-rebuild": "^1.8.5",
     "next": "^9.0.2",
     "nextron": "^5.3.1",
     "null-loader": "^3.0.0",
